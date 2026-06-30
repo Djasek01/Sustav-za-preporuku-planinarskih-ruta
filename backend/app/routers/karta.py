@@ -115,3 +115,29 @@ def sve_kontrolne_tocke(
     ORDER BY kt.visinam DESC
     """
     return run_query(query, params)
+
+
+@router.get("/sve-rute")
+def sve_rute_za_kartu():
+    query = """
+    MATCH (r:Ruta)
+    OPTIONAL MATCH (r)-[:POLAZI_IZ]->(l:Lokacija)
+    OPTIONAL MATCH (r)-[:POKRIVA]->(kt:KontrolnaTocka)
+    WHERE kt.lat IS NOT NULL
+    RETURN
+        r.id        AS id,
+        r.naziv     AS naziv,
+        r.tezina    AS tezina,
+        r.regija    AS regija,
+        l.lat       AS polaziste_lat,
+        l.lng       AS polaziste_lng,
+        l.naziv     AS polaziste_naziv,
+        COLLECT(DISTINCT {
+            naziv: kt.naziv,
+            lat:   kt.lat,
+            lng:   kt.lng,
+            visina: kt.visinam
+        }) AS tocke
+    ORDER BY r.id
+    """
+    return run_query(query)

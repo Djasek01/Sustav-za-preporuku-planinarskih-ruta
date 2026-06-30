@@ -13,7 +13,7 @@ def get_rute(
     tezina: Optional[str] = Query(None, description="lagana | srednja | teska"),
     regija: Optional[str] = Query(None),
     max_trajanje: Optional[float] = Query(None, description="Maksimalno trajanje u satima"),
-    limit: int = Query(20, le=100),
+    limit: int = Query(20, le=1300),
 ):
     where_clauses = []
     params = {"limit": limit}
