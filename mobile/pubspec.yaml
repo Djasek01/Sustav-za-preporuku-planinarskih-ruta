@@ -1,6 +1,7 @@
-name: sustav_za_preporuku_planinarskih_ruta
-description: Mobilna aplikacija za preporuku planinarskih ruta
+name: mobile
+description: Sustav za preporuku planinarskih ruta
 publish_to: 'none'
+version: 1.0.0+1
 
 environment:
   sdk: ^3.12.0
@@ -11,7 +12,11 @@ dependencies:
   http: ^1.2.0
   google_maps_flutter: ^2.5.0
   provider: ^6.1.0
-  flutter_dotenv: ^5.1.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
 
 flutter:
   uses-material-design: true
