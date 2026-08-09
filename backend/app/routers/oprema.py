@@ -1,27 +1,20 @@
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Query, HTTPException
 from typing import Optional
 from app.database import run_query
 
 router = APIRouter(prefix="/oprema", tags=["Oprema"])
 
 
-# ─────────────────────────────────────────
-# GET /oprema  — sva oprema
-# ─────────────────────────────────────────
 @router.get("/")
 def get_oprema():
     query = """
     MATCH (o:Oprema)
     RETURN o.naziv AS naziv, o.opis AS opis, o.trosak AS trosak
-    ORDER BY o.naziv
+    ORDER BY o.trosak DESC
     """
     return run_query(query)
 
 
-# ─────────────────────────────────────────
-# GET /oprema/za-rutu/{ruta_id}
-# Funkcionalnost 5: preporuka opreme
-# ─────────────────────────────────────────
 @router.get("/za-rutu/{ruta_id}")
 def oprema_za_rutu(ruta_id: int):
     query = """
@@ -36,10 +29,8 @@ def oprema_za_rutu(ruta_id: int):
     """
     result = run_query(query, {"id": ruta_id})
     if not result:
-        from fastapi import HTTPException
         raise HTTPException(status_code=404, detail="Ruta nema definiranu opremu ili ne postoji")
 
-    # Ukupni trošak opreme
     ukupno = sum(r.get("trosak_kn") or 0 for r in result)
     return {
         "ruta": result[0]["ruta"] if result else None,
@@ -49,15 +40,12 @@ def oprema_za_rutu(ruta_id: int):
     }
 
 
-# ─────────────────────────────────────────
-# GET /oprema/procjena-troska/{ruta_id}
-# Funkcionalnost 6: procjena troška izleta
-# ─────────────────────────────────────────
 @router.get("/procjena-troska/{ruta_id}")
 def procjena_troska(
     ruta_id: int,
-    broj_sudionika: int = Query(1, ge=1, le=50, description="Broj sudionika"),
-    vlastita_oprema: bool = Query(False, description="Ima li vlastitu opremu"),
+    broj_sudionika: int = Query(1, ge=1, le=50),
+    vlastita_oprema: bool = Query(False),
+    udaljenost_km: Optional[float] = Query(None, description="Udaljenost do polazišta u km (ako nije zadano, procjenjuje se 50 km)"),
 ):
     query = """
     MATCH (r:Ruta {id: $id})
@@ -70,24 +58,33 @@ def procjena_troska(
         r.trajanjeh    AS trajanje_h,
         r.trosak       AS trosak_rute,
         l.naziv        AS polaziste,
-        COLLECT(DISTINCT {naziv: o.naziv, trosak: o.trosak}) AS oprema_lista
+        COLLECT(DISTINCT {naziv: o.naziv, trosak: o.trosak, opis: o.opis}) AS oprema_lista
     """
     result = run_query(query, {"id": ruta_id})
     if not result:
-        from fastapi import HTTPException
         raise HTTPException(status_code=404, detail="Ruta nije pronađena")
 
     r = result[0]
     trosak_rute = r.get("trosak_rute") or 0
-    trosak_opreme = 0 if vlastita_oprema else sum(
-        (o.get("trosak") or 0) for o in r.get("oprema_lista", []) if o.get("naziv")
-    )
 
-    # Procjena goriva: ~0.15 EUR/km, prosječna udaljenost do polazišta 50km
-    trosak_prijevoza = round(50 * 0.15 * 2, 2)  # tamo-natrag
+    # Oprema — ako nema vlastitu, zbroji cijene svih potrebnih komada
+    oprema_stavke = [o for o in r.get("oprema_lista", []) if o.get("naziv")]
+    trosak_opreme = 0.0
+    if not vlastita_oprema:
+        trosak_opreme = sum((o.get("trosak") or 0) for o in oprema_stavke)
 
-    ukupno_po_osobi = round(trosak_rute + trosak_opreme + trosak_prijevoza, 2)
-    ukupno_grupa = round(ukupno_po_osobi * broj_sudionika, 2)
+    # Prijevoz — realna procjena
+    # Prosječna cijena goriva: 1.50 EUR/L, prosječna potrošnja: 7L/100km
+    # Tamo + natrag = x2
+    km = udaljenost_km or 50.0  # default 50 km ako nije zadano
+    cijena_po_km = 0.105  # 7L/100km * 1.50 EUR/L = 0.105 EUR/km
+    trosak_prijevoza = round(km * cijena_po_km * 2, 2)  # tamo-natrag
+
+    # Ako dijele prijevoz, cijena se dijeli
+    trosak_prijevoza_po_osobi = round(trosak_prijevoza / min(broj_sudionika, 4), 2)  # max 4 u autu
+
+    ukupno_po_osobi = round(trosak_rute + trosak_opreme + trosak_prijevoza_po_osobi, 2)
+    ukupno_grupa = round((trosak_rute + trosak_opreme) * broj_sudionika + trosak_prijevoza, 2)
 
     return {
         "ruta": r["naziv"],
@@ -97,12 +94,21 @@ def procjena_troska(
         "polaziste": r["polaziste"],
         "broj_sudionika": broj_sudionika,
         "vlastita_oprema": vlastita_oprema,
+        "udaljenost_km": km,
         "troskovi": {
             "trosak_rute_eur": trosak_rute,
-            "trosak_opreme_eur": trosak_opreme,
-            "procjena_prijevoza_eur": trosak_prijevoza,
+            "trosak_opreme_eur": round(trosak_opreme, 2),
+            "trosak_prijevoza_eur": trosak_prijevoza,
+            "trosak_prijevoza_po_osobi_eur": trosak_prijevoza_po_osobi,
             "ukupno_po_osobi_eur": ukupno_po_osobi,
             "ukupno_grupa_eur": ukupno_grupa,
         },
-        "oprema": r["oprema_lista"]
+        "oprema": [
+            {
+                "naziv": o.get("naziv"),
+                "trosak": o.get("trosak"),
+                "opis": o.get("opis"),
+            }
+            for o in oprema_stavke
+        ],
     }
