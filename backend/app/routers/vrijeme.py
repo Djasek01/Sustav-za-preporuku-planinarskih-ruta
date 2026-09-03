@@ -4,10 +4,6 @@ from app.database import run_query
 router = APIRouter(prefix="/vrijeme", tags=["Vremenski uvjeti"])
 
 
-# ─────────────────────────────────────────
-# GET /vrijeme/uvjeti
-# Svi vremenski uvjeti iz baze
-# ─────────────────────────────────────────
 @router.get("/uvjeti")
 def get_uvjeti():
     query = """
@@ -18,10 +14,6 @@ def get_uvjeti():
     return run_query(query)
 
 
-# ─────────────────────────────────────────
-# GET /vrijeme/preporuka
-# Funkcionalnost 2: rute prikladne za trenutni uvjet
-# ─────────────────────────────────────────
 @router.get("/preporuka")
 def rute_po_uvjetu(
     uvjet: str = Query(..., description="vjetar | magla | kisovito | suncano"),
@@ -53,10 +45,6 @@ def rute_po_uvjetu(
     return run_query(query, params)
 
 
-# ─────────────────────────────────────────
-# GET /vrijeme/rute-izbjegavati
-# Rute koje treba izbjegavati pri danom uvjetu
-# ─────────────────────────────────────────
 @router.get("/rute-izbjegavati")
 def rute_izbjegavati(
     uvjet: str = Query(..., description="vjetar | magla | kisovito"),

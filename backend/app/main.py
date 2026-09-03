@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.database import run_query, close_driver
-from app.routers import rute, oprema, karta, vrijeme
+from app.routers import rute, oprema, karta, vrijeme, slike_router
 
 app = FastAPI(
     title="Sustav za preporuku planinarskih ruta",
@@ -19,7 +19,7 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# CORS za Flutter (Android emulator koristi 10.0.2.2, iOS simulator localhost)
+# CORS za Flutter
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -33,7 +33,7 @@ app.include_router(rute.router)
 app.include_router(oprema.router)
 app.include_router(karta.router)
 app.include_router(vrijeme.router)
-
+app.include_router(slike_router.router)
 
 @app.on_event("shutdown")
 def shutdown():

@@ -2,13 +2,27 @@ from fastapi import APIRouter, Query, HTTPException
 from typing import Optional
 from app.database import run_query
 from app.config import GOOGLE_MAPS_API_KEY
+import requests as req
 
 router = APIRouter(prefix="/karta", tags=["Karta"])
 
 
-# ─────────────────────────────────────────
-# GET /karta/ruta/{ruta_id}
-# ─────────────────────────────────────────
+def _svjezi_url(photo_ref: str) -> str:
+    """Dohvati svježi URL iz photo_ref."""
+    if not photo_ref:
+        return ""
+    try:
+        api_url = (
+            f"https://places.googleapis.com/v1/{photo_ref}/media"
+            f"?maxWidthPx=800&key={GOOGLE_MAPS_API_KEY}&skipHttpRedirect=true"
+        )
+        resp = req.get(api_url, timeout=10)
+        data = resp.json()
+        return data.get("photoUri", "")
+    except Exception:
+        return ""
+
+
 @router.get("/ruta/{ruta_id}")
 def karta_rute(ruta_id: int):
     query = """
@@ -29,7 +43,7 @@ def karta_rute(ruta_id: int):
             lng:    kt.lng,
             visina: kt.visinam,
             tezina: kt.tezina,
-            slika_url: kt.slika_url
+            photo_ref: kt.photo_ref
         }) AS kontrolne_tocke
     """
     result = run_query(query, {"id": ruta_id})
@@ -49,6 +63,7 @@ def karta_rute(ruta_id: int):
 
     for kt in r.get("kontrolne_tocke", []):
         if kt.get("lat"):
+            slika = _svjezi_url(kt.get("photo_ref")) if kt.get("photo_ref") else None
             waypoints.append({
                 "tip": "kontrolna_tocka",
                 "naziv": kt["naziv"],
@@ -56,7 +71,7 @@ def karta_rute(ruta_id: int):
                 "lng": kt["lng"],
                 "visina_m": kt["visina"],
                 "tezina": kt.get("tezina"),
-                "slika_url": kt.get("slika_url"),
+                "slika_url": slika,
             })
 
     maps_url = None
@@ -78,9 +93,6 @@ def karta_rute(ruta_id: int):
     }
 
 
-# ─────────────────────────────────────────
-# GET /karta/kontrolne-tocke
-# ─────────────────────────────────────────
 @router.get("/kontrolne-tocke")
 def sve_kontrolne_tocke(
     podrucje_id: Optional[int] = Query(None),
@@ -109,19 +121,15 @@ def sve_kontrolne_tocke(
         kt.lng       AS lng,
         kt.visinam   AS visina_m,
         kt.tezina    AS tezina,
-        kt.slika_url AS slika_url
+        kt.photo_ref AS photo_ref
     ORDER BY kt.visinam DESC
     """
     return run_query(query, params)
 
 
-# ─────────────────────────────────────────
-# GET /karta/sve-rute
-# Sada uključuje slika_url i regiju za filtriranje
-# ─────────────────────────────────────────
 @router.get("/sve-rute")
 def sve_rute_za_kartu(
-    regija: Optional[str] = Query(None, description="Filter po regiji"),
+    regija: Optional[str] = Query(None),
 ):
     where = "WHERE kt.lat IS NOT NULL"
     params = {}
@@ -148,8 +156,17 @@ def sve_rute_za_kartu(
             lng:    kt.lng,
             visina: kt.visinam,
             tezina: kt.tezina,
-            slika_url: kt.slika_url
+            photo_ref: kt.photo_ref
         }}) AS tocke
     ORDER BY r.id
     """
-    return run_query(query, params)
+    results = run_query(query, params)
+
+    # Dohvati svježe URL-ove za sve tocke
+    for ruta in results:
+        for t in ruta.get("tocke", []):
+            ref = t.get("photo_ref")
+            t["slika_url"] = _svjezi_url(ref) if ref else None
+            t.pop("photo_ref", None)
+
+    return results
