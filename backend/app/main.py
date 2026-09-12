@@ -19,7 +19,7 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# CORS za Flutter
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -28,7 +28,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Registracija routera
+
 app.include_router(rute.router)
 app.include_router(oprema.router)
 app.include_router(karta.router)

@@ -70,50 +70,42 @@ def procjena_troska(
 
     r = result[0]
 
-    # ── ULAZNICA ──
-    # trosak_rute = ulaznica NP/PP, 0 za sve ostale
+
     ulaznica = r.get("trosak_rute") or 0
     ulaznica_ukupno = ulaznica * broj_sudionika
 
-    # ── OPREMA ──
+
     oprema_stavke = [o for o in r.get("oprema_lista", []) if o.get("naziv")]
     trosak_opreme = 0.0
     if not vlastita_oprema:
         trosak_opreme = sum((o.get("trosak") or 0) for o in oprema_stavke)
 
-    # ── PRIJEVOZ ──
-    # Realna procjena za HR:
-    # - Gorivo: prosječna cijena 1.45 EUR/L (eurosuper 95, HR srpanj 2025)
-    # - Potrošnja: 7 L/100 km (prosječan auto)
-    # - Cestarina: procjena prema regiji
-    #
-    # Ako korisnik nije zadao udaljenost, procjenjujemo prema regiji
-    # (prosječna udaljenost od Zagreba kao referentne točke)
+ 
     regija = r.get("regija") or ""
     if udaljenost_km is None:
         udaljenost_km = _procijeni_udaljenost(regija)
 
-    cijena_goriva_po_litri = 1.45  # EUR/L
+    cijena_goriva_po_litri = 1.45 
     potrosnja_l_na_100km = 7.0
     cijena_po_km = (potrosnja_l_na_100km / 100) * cijena_goriva_po_litri  # ~0.1015 EUR/km
 
     gorivo_tamo_natrag = round(udaljenost_km * 2 * cijena_po_km, 2)
 
-    # Cestarina (procjena prema regiji)
+
     cestarina = _procijeni_cestarinu(regija)
     cestarina_tamo_natrag = cestarina * 2
 
     trosak_prijevoza = round(gorivo_tamo_natrag + cestarina_tamo_natrag, 2)
 
-    # Dijeljenje prijevoza (max 4 osobe u autu)
+
     osoba_u_autu = min(broj_sudionika, 4)
     trosak_prijevoza_po_osobi = round(trosak_prijevoza / osoba_u_autu, 2)
 
-    # ── UKUPNO ──
+
     ukupno_po_osobi = round(ulaznica + trosak_opreme + trosak_prijevoza_po_osobi, 2)
 
-    # Grupa: svak plati ulaznicu + opremu, prijevoz se dijeli
-    broj_auta = max(1, -(-broj_sudionika // 4))  # zaokruži na gore
+
+    broj_auta = max(1, -(-broj_sudionika // 4)) 
     ukupno_prijevoz_grupa = round(trosak_prijevoza * broj_auta, 2)
     ukupno_grupa = round(
         ulaznica_ukupno
@@ -177,7 +169,7 @@ def _procijeni_udaljenost(regija: str) -> float:
     for kljuc, km in udaljenosti.items():
         if kljuc in regija_upper:
             return float(km)
-    return 100.0  # default
+    return 100.0  
 
 
 def _procijeni_cestarinu(regija: str) -> float:
@@ -206,7 +198,7 @@ def _procijeni_cestarinu(regija: str) -> float:
     for kljuc, eur in cestarine.items():
         if kljuc in regija_upper:
             return float(eur)
-    return 5.0  # default
+    return 5.0  
 
 
 def _napomena_ulaznica(ulaznica: float, regija: str) -> str:

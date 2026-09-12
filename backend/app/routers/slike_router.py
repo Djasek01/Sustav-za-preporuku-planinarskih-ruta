@@ -25,7 +25,6 @@ def slika_kontrolne_tocke(naziv: str):
 
     photo_ref = result[0]["ref"]
 
-    # Dohvati svježi URL od Googlea
     api_url = (
         f"https://places.googleapis.com/v1/{photo_ref}/media"
         f"?maxWidthPx=800&key={GOOGLE_MAPS_API_KEY}&skipHttpRedirect=true"
@@ -37,7 +36,6 @@ def slika_kontrolne_tocke(naziv: str):
     if not photo_uri:
         raise HTTPException(status_code=404, detail="Slika nije dostupna")
 
-    # Preusmjeri klijenta na svježi URL
     return RedirectResponse(url=photo_uri)
 
 

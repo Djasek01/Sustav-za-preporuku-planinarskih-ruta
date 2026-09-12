@@ -39,7 +39,7 @@ def dohvati_photo_ref(naziv: str, lat: float, lng: float) -> str | None:
     photos = places[0].get("photos", [])
     if not photos:
         return None
-    # Spremi SAMO referencu (npr. "places/ChIJ.../photos/AelY...")
+    
     return photos[0]["name"]
 
 
@@ -48,10 +48,10 @@ def main():
     print("DOHVAT PHOTO REFERENCI (ne URL-ova)")
     print("=" * 50)
 
-    # Testiraj API ključ
+    
     print(f"API ključ: {str(GOOGLE_MAPS_API_KEY)[:10]}...")
 
-    # Obriši sve stare slika_url
+    
     run_query("MATCH (kt:KontrolnaTocka) REMOVE kt.slika_url, kt.photo_ref")
     print("Obrisane stare slike.\n")
 

@@ -14,7 +14,7 @@ def dobna_ogranicenja(dob: int) -> dict:
     elif dob < 16:
         return {"max_duljina_km": 15, "max_visinska_m": 1000, "tezine": ["lagana", "srednja", "teska"]}
     elif dob < 65:
-        # Odrasli — bez ograničenja
+       
         return {"max_duljina_km": None, "max_visinska_m": None, "tezine": ["lagana", "srednja", "teska"]}
     else:
         return {"max_duljina_km": 12, "max_visinska_m": 800, "tezine": ["lagana", "srednja"]}

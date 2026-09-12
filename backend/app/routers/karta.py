@@ -162,7 +162,6 @@ def sve_rute_za_kartu(
     """
     results = run_query(query, params)
 
-    # Dohvati svježe URL-ove za sve tocke
     for ruta in results:
         for t in ruta.get("tocke", []):
             ref = t.get("photo_ref")
