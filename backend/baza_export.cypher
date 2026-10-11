@@ -17,7 +17,7 @@ CREATE (:`GodisnjeDoba` {naziv: 'proljece'});
 CREATE (:`GodisnjeDoba` {naziv: 'ljeto'});
 CREATE (:`GodisnjeDoba` {naziv: 'jesen'});
 CREATE (:`GodisnjeDoba` {naziv: 'zima'});
-
+ 
 // ---- KontrolnaTocka ----
 CREATE (:`KontrolnaTocka` {visinam: 790, lng: 17.846732, naziv: 'Krndija - vrh Kapovac', tezina: 'srednja', lat: 45.483165});
 CREATE (:`KontrolnaTocka` {visinam: 667, lng: 17.653913, naziv: 'Papuk - vrh Lapjak', tezina: 'srednja', lat: 45.484698});

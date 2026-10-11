@@ -2,4 +2,4 @@ fastapi
 uvicorn[standard]
 neo4j
 python-dotenv
-httpx
+requests
