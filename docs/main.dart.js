@@ -30198,7 +30198,7 @@ q=s[1]
 s=s[2]
 p=b[2]
 return A.c([o*m+l*k+j*n,o*r+l*q+j*s,o*p[0]+l*p[1]+j*p[2]],t.n)},
-u8(){return"https://tvoj-backend.example.com"},
+u8(){return"https://planinarhr-api.onrender.com"},
 aPe(){var s,r,q,p,o=null
 try{o=A.apb()}catch(s){if(t.VI.b(A.ab(s))){r=$.aCi
 if(r!=null)return r
