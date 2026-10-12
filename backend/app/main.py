@@ -3,6 +3,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.database import run_query, close_driver
 from app.routers import rute, oprema, karta, vrijeme, slike_router
 
+from app.routers import rute, oprema, karta, vrijeme
+from app.routers import weather_api  # ← NOVO
+
 app = FastAPI(
     title="Sustav za preporuku planinarskih ruta",
     description="""
@@ -15,8 +18,10 @@ app = FastAPI(
     4. **Prikaz rute na karti** — `/karta/ruta/{id}`
     5. **Preporuka opreme** — `/oprema/za-rutu/{id}`
     6. **Procjena troška** — `/oprema/procjena-troska/{id}`
+    7. **Real-time vrijeme** — `/weather/ruta/{id}`
+    8. **Pametna preporuka po vremenu** — `/weather/pametna-preporuka`
     """,
-    version="1.0.0"
+    version="1.1.0"
 )
 
 
@@ -64,3 +69,5 @@ def zdravlje():
         }
     except Exception as e:
         return {"status": "greška", "detalji": str(e)}
+
+app.include_router(weather_api.router)
