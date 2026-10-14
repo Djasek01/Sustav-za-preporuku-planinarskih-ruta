@@ -4,7 +4,9 @@ from app.database import run_query, close_driver
 from app.routers import rute, oprema, karta, vrijeme, slike_router
 
 from app.routers import rute, oprema, karta, vrijeme
-from app.routers import weather_api  # ← NOVO
+from app.routers import weather_api  
+
+from app.routers import regije_api
 
 app = FastAPI(
     title="Sustav za preporuku planinarskih ruta",
@@ -71,3 +73,4 @@ def zdravlje():
         return {"status": "greška", "detalji": str(e)}
 
 app.include_router(weather_api.router)
+app.include_router(regije_api.router)
