@@ -172,7 +172,7 @@ class _RegijeScreenState extends State<RegijeScreen> {
                       }
 
                       final regija = _regije[index - 1];
-                      final naziv = regija['regija'] as String? ?? 'Nepoznato';
+                      final naziv = regija['regija'] ?.toString() ?? 'Nepoznato';
                       final brojRuta =
                           (regija['broj_ruta'] as num?)?.toInt() ?? 0;
                       final ikona = _regijaIkone[naziv] ?? Icons.place;
@@ -398,7 +398,7 @@ class _RegijaDetaljiScreenState extends State<RegijaDetaljiScreen>
                       const SizedBox(width: 6),
                       ..._podregije.map((p) {
                         final naziv =
-                            p['podregija'] as String? ?? '';
+                            p['podregija'] ?.toString() ?? '';
                         return Padding(
                           padding: const EdgeInsets.only(right: 6),
                           child: FilterChip(
@@ -513,7 +513,7 @@ class _RegijaDetaljiScreenState extends State<RegijaDetaljiScreen>
                       itemBuilder: (context, index) {
                         final pod = _podregije[index];
                         final naziv =
-                            pod['podregija'] as String? ?? '';
+                            pod['podregija'] ?.toString() ?? '';
                         final broj =
                             (pod['broj_ruta'] as num?)?.toInt() ?? 0;
                         return Card(
@@ -550,14 +550,14 @@ class _RegijaDetaljiScreenState extends State<RegijaDetaljiScreen>
 
   Widget _rutaKartica(Map<String, dynamic> ruta) {
     final id = (ruta['id'] as num?)?.toInt() ?? 0;
-    final naziv = ruta['naziv'] as String? ?? 'Nepoznata ruta';
-    final tezina = ruta['tezina'] as String?;
+    final naziv = ruta['naziv'] ?.toString() ?? 'Nepoznata ruta';
+    final tezina = ruta['tezina'] ?.toString();
     final trajanje = ruta['trajanje_h'];
     final duljina = ruta['duljina_km'];
     final visinska = ruta['visinska_razlika_m'];
-    final podregija = ruta['podregija'] as String? ?? '';
-    final hpsBroj = ruta['hps_broj'] as String?;
-    final hpd = ruta['hpd'] as String?;
+    final podregija = ruta['podregija'] ?.toString() ?? '';
+    final hpsBroj = ruta['hps_broj'] ?.toString();
+    final hpd = ruta['hpd'] ?.toString();
     final tipTerena = (ruta['tip_terena'] as List<dynamic>?)
             ?.cast<String>()
             .join(', ') ??
