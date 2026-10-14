@@ -75,7 +75,6 @@ async def _fetch_weather(lat: float, lng: float) -> dict:
 
 # ─────────────────────────────────────────
 # GET /weather/lokacija
-# Trenutno vrijeme + 7-dnevna prognoza za koordinate
 # ─────────────────────────────────────────
 @router.get("/lokacija")
 async def weather_lokacija(
@@ -90,7 +89,6 @@ async def weather_lokacija(
     wind_speed = current.get("wind_speed_10m", 0)
     info = _wmo_to_uvjet(wmo_code, wind_speed)
 
-    # Trenutno stanje
     trenutno = {
         "temperatura": current.get("temperature_2m"),
         "osjet_temperature": current.get("apparent_temperature"),
@@ -104,7 +102,6 @@ async def weather_lokacija(
         "uvjet": info["uvjet"],
     }
 
-    # 7-dnevna prognoza
     prognoza = []
     dates = daily.get("time", [])
     for i, datum in enumerate(dates):
@@ -130,7 +127,6 @@ async def weather_lokacija(
 
 # ─────────────────────────────────────────
 # GET /weather/ruta/{ruta_id}
-# Vrijeme za polazište konkretne rute
 # ─────────────────────────────────────────
 @router.get("/ruta/{ruta_id}")
 async def weather_rute(ruta_id: int):
@@ -154,7 +150,6 @@ async def weather_rute(ruta_id: int):
     lat = r.get("polaziste_lat")
     lng = r.get("polaziste_lng")
 
-    # Ako nema polazišta, koristi prvu kontrolnu točku
     if not lat or not lng:
         kt = r.get("prva_kt")
         if kt:
@@ -172,7 +167,6 @@ async def weather_rute(ruta_id: int):
     wind_speed = current.get("wind_speed_10m", 0)
     info = _wmo_to_uvjet(wmo_code, wind_speed)
 
-    # Provjera je li ruta sigurna za trenutni uvjet
     safety_query = """
     MATCH (r:Ruta {id: $id})
     OPTIONAL MATCH (r)-[rel:PREPORUCLJIVA_PO]->(v:VremenskiUvjet {naziv: $uvjet})
@@ -196,7 +190,6 @@ async def weather_rute(ruta_id: int):
         "uvjet": info["uvjet"],
     }
 
-    # 7-dnevna prognoza
     prognoza = []
     dates = daily.get("time", [])
     for i, datum in enumerate(dates):
@@ -232,8 +225,6 @@ async def weather_rute(ruta_id: int):
 
 # ─────────────────────────────────────────
 # GET /weather/pametna-preporuka
-# Pametna preporuka: kombinira real-time vrijeme
-# s lokacijom ruta i vraća samo sigurne rute
 # ─────────────────────────────────────────
 @router.get("/pametna-preporuka")
 async def pametna_preporuka(
@@ -243,7 +234,6 @@ async def pametna_preporuka(
     tezina: Optional[str] = Query(None),
     limit: int = Query(10, le=50),
 ):
-    # 1. Dohvati trenutno vrijeme za lokaciju korisnika
     weather = await _fetch_weather(lat, lng)
     current = weather.get("current", {})
     wmo_code = current.get("weather_code", 0)
@@ -251,7 +241,6 @@ async def pametna_preporuka(
     info = _wmo_to_uvjet(wmo_code, wind_speed)
     uvjet = info["uvjet"]
 
-    # 2. Odredi godišnje doba automatski
     from datetime import date
     today = date.today()
     month = today.month
@@ -264,7 +253,6 @@ async def pametna_preporuka(
     else:
         godisnje_doba = "zima"
 
-    # 3. Dobna ograničenja
     dobna_filter = ""
     params = {"uvjet": uvjet, "godisnje_doba": godisnje_doba, "limit": limit}
 
@@ -285,7 +273,6 @@ async def pametna_preporuka(
         tezina_filter = "AND r.tezina = $tezina"
         params["tezina"] = tezina
 
-    # 4. Nađi rute sigurne za trenutno vrijeme + godišnje doba
     query = f"""
     MATCH (r:Ruta)
     {dobna_filter}
@@ -336,12 +323,10 @@ async def pametna_preporuka(
 
 # ─────────────────────────────────────────
 # GET /weather/karta-overlay
-# Vrijeme za sve rute (polazišta) — za kartu
 # ─────────────────────────────────────────
 @router.get("/karta-overlay")
 async def weather_karta_overlay():
-    """Dohvati vrijeme za sve regije ruta (grupirano po regijama da se smanji broj API poziva)."""
-    # Dohvati jedinstvene lokacije (po regiji)
+    """Dohvati vrijeme za sve regije ruta."""
     query = """
     MATCH (r:Ruta)-[:POLAZI_IZ]->(l:Lokacija)
     WHERE l.lat IS NOT NULL
@@ -386,11 +371,15 @@ async def weather_karta_overlay():
             except Exception:
                 continue
 
-            # ─────────────────────────────────────────
+    return results
+
+
+# ─────────────────────────────────────────
 # GET /weather/prognoza
 # Za Flutter WeatherKartica widget (camelCase format)
 # ─────────────────────────────────────────
 DANI_HR = ["Pon", "Uto", "Sri", "Čet", "Pet", "Sub", "Ned"]
+
 
 @router.get("/prognoza")
 async def weather_prognoza(
@@ -452,5 +441,3 @@ async def weather_prognoza(
         },
         "prognoza": prognoza,
     }
-
-    return results
