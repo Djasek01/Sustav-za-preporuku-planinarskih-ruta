@@ -386,4 +386,71 @@ async def weather_karta_overlay():
             except Exception:
                 continue
 
+            # ─────────────────────────────────────────
+# GET /weather/prognoza
+# Za Flutter WeatherKartica widget (camelCase format)
+# ─────────────────────────────────────────
+DANI_HR = ["Pon", "Uto", "Sri", "Čet", "Pet", "Sub", "Ned"]
+
+@router.get("/prognoza")
+async def weather_prognoza(
+    lat: float = Query(...),
+    lon: float = Query(...),
+):
+    data = await _fetch_weather(lat, lon)
+    current = data.get("current", {})
+    daily = data.get("daily", {})
+
+    wmo_code = current.get("weather_code", 0)
+    wind_speed = current.get("wind_speed_10m", 0)
+    oborine = current.get("precipitation", 0)
+    info = _wmo_to_uvjet(wmo_code, wind_speed)
+
+    sigurno = True
+    poruka = ""
+    if wind_speed and wind_speed > 50:
+        sigurno = False
+        poruka = f"Jak vjetar ({wind_speed} km/h). Nije preporučljivo planinariti."
+    elif oborine and oborine > 5:
+        sigurno = False
+        poruka = f"Obilne oborine ({oborine} mm). Staze mogu biti skliske."
+    elif wmo_code >= 95:
+        sigurno = False
+        poruka = "Grmljavinsko nevrijeme. Odgodite planinarenje."
+
+    prognoza = []
+    dates = daily.get("time", [])
+    codes = daily.get("weather_code", [])
+    maxs = daily.get("temperature_2m_max", [])
+    mins = daily.get("temperature_2m_min", [])
+    for i, datum in enumerate(dates):
+        from datetime import date as dt_date
+        d = dt_date.fromisoformat(datum)
+        daily_wmo = codes[i] if i < len(codes) else 0
+        d_info = _wmo_to_uvjet(daily_wmo)
+        prognoza.append({
+            "danSkraceni": DANI_HR[d.weekday()],
+            "datum": datum,
+            "ikona": d_info["ikona"],
+            "tempMax": maxs[i] if i < len(maxs) else None,
+            "tempMin": mins[i] if i < len(mins) else None,
+            "opis": d_info["opis"],
+        })
+
+    return {
+        "sigurno": sigurno,
+        "sigurnostPoruka": poruka,
+        "lokacija": None,
+        "trenutno": {
+            "temperatura": current.get("temperature_2m"),
+            "osjetTemperature": current.get("apparent_temperature"),
+            "opis": info["opis"],
+            "ikona": info["ikona"],
+            "vlaznost": current.get("relative_humidity_2m"),
+            "vjetarKmh": wind_speed,
+            "oborineMm": oborine,
+        },
+        "prognoza": prognoza,
+    }
+
     return results

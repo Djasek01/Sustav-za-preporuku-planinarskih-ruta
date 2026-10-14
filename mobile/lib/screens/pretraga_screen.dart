@@ -51,7 +51,7 @@ class _PretragaScreenState extends State<PretragaScreen> {
       final regije = await _api.getSveRegije();
       setState(() {
         _dostupneRegije = regije
-            .map((r) => r['regija'] as String? ?? '')
+            .map((r) => r['regija'] ?.toString() ?? '')
             .where((r) => r.isNotEmpty)
             .toList()
           ..sort();
@@ -362,15 +362,15 @@ class _PretragaScreenState extends State<PretragaScreen> {
 
   Widget _rutaKartica(Map<String, dynamic> ruta) {
     final id = (ruta['id'] as num?)?.toInt() ?? 0;
-    final naziv = ruta['naziv'] as String? ?? 'Nepoznata ruta';
-    final tezina = ruta['tezina'] as String?;
+    final naziv = ruta['naziv'] ?.toString() ?? 'Nepoznata ruta';
+    final tezina = ruta['tezina'] ?.toString();
     final trajanje = ruta['trajanje_h'];
     final duljina = ruta['duljina_km'];
     final visinska = ruta['visinska_razlika_m'];
-    final regija = ruta['regija'] as String? ?? '';
-    final podregija = ruta['podregija'] as String? ?? '';
-    final hpsBroj = ruta['hps_broj'] as String?;
-    final hpd = ruta['hpd'] as String?;
+    final regija = ruta['regija'] ?.toString() ?? '';
+    final podregija = ruta['podregija'] ?.toString() ?? '';
+    final hpsBroj = ruta['hps_broj'] ?.toString();
+    final hpd = ruta['hpd'] ?.toString();
 
     return Card(
       margin: const EdgeInsets.only(bottom: 8),

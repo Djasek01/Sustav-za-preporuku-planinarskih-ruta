@@ -71,14 +71,18 @@ class WeatherKartica extends StatelessWidget {
                         trenutno.opis,
                         style: TextStyle(
                             fontSize: 14,
-                            color: isDark ? Colors.grey.shade300 : Colors.grey.shade700),
+                            color: isDark
+                                ? Colors.grey.shade300
+                                : Colors.grey.shade700),
                       ),
                       if (trenutno.osjetTemperature != null)
                         Text(
                           'Osjet: ${trenutno.osjetTemperature!.toStringAsFixed(1)}°C',
                           style: TextStyle(
                               fontSize: 12,
-                              color: isDark ? Colors.grey.shade400 : Colors.grey.shade500),
+                              color: isDark
+                                  ? Colors.grey.shade400
+                                  : Colors.grey.shade500),
                         ),
                     ],
                   ),
@@ -92,9 +96,16 @@ class WeatherKartica extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _detalj('💧', '${trenutno.vlaznost ?? '?'}%', 'Vlažnost'),
-                _detalj('💨', '${trenutno.vjetarKmh?.toStringAsFixed(0) ?? '?'} km/h', 'Vjetar'),
-                _detalj('🌧️', '${trenutno.oborineMm?.toStringAsFixed(1) ?? '0'} mm', 'Oborine'),
+                _detalj(
+                    '💧', '${trenutno.vlaznost ?? '?'}%', 'Vlažnost'),
+                _detalj(
+                    '💨',
+                    '${trenutno.vjetarKmh?.toStringAsFixed(0) ?? '?'} km/h',
+                    'Vjetar'),
+                _detalj(
+                    '🌧️',
+                    '${trenutno.oborineMm?.toStringAsFixed(1) ?? '0'} mm',
+                    'Oborine'),
               ],
             ),
 
@@ -109,12 +120,14 @@ class WeatherKartica extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.warning_amber, color: Colors.red, size: 20),
+                    const Icon(Icons.warning_amber,
+                        color: Colors.red, size: 20),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
                         weather.sigurnostPoruka,
-                        style: const TextStyle(fontSize: 12, color: Colors.red),
+                        style:
+                            const TextStyle(fontSize: 12, color: Colors.red),
                       ),
                     ),
                   ],
@@ -131,7 +144,7 @@ class WeatherKartica extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               SizedBox(
-                height: 100,
+                height: 110,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
                   itemCount: weather.prognoza.length,
@@ -142,9 +155,8 @@ class WeatherKartica extends StatelessWidget {
                       margin: const EdgeInsets.only(right: 8),
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: isDark
-                            ? Colors.grey.shade800
-                            : Colors.white,
+                        color:
+                            isDark ? Colors.grey.shade800 : Colors.white,
                         borderRadius: BorderRadius.circular(10),
                         border: Border.all(
                           color: isDark
@@ -152,32 +164,38 @@ class WeatherKartica extends StatelessWidget {
                               : Colors.grey.shade300,
                         ),
                       ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            dan.danSkraceni,
-                            style: const TextStyle(
-                                fontSize: 11, fontWeight: FontWeight.bold),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(dan.ikona,
-                              style: const TextStyle(fontSize: 22)),
-                          const SizedBox(height: 4),
-                          Text(
-                            '${dan.tempMax?.toStringAsFixed(0) ?? '?'}°',
-                            style: const TextStyle(
-                                fontSize: 12, fontWeight: FontWeight.bold),
-                          ),
-                          Text(
-                            '${dan.tempMin?.toStringAsFixed(0) ?? '?'}°',
-                            style: TextStyle(
-                                fontSize: 11,
-                                color: isDark
-                                    ? Colors.grey.shade400
-                                    : Colors.grey.shade500),
-                          ),
-                        ],
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              dan.danSkraceni,
+                              style: const TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(dan.ikona,
+                                style: const TextStyle(fontSize: 20)),
+                            const SizedBox(height: 2),
+                            Text(
+                              '${dan.tempMax?.toStringAsFixed(0) ?? '?'}°',
+                              style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                            Text(
+                              '${dan.tempMin?.toStringAsFixed(0) ?? '?'}°',
+                              style: TextStyle(
+                                  fontSize: 11,
+                                  color: isDark
+                                      ? Colors.grey.shade400
+                                      : Colors.grey.shade500),
+                            ),
+                          ],
+                        ),
                       ),
                     );
                   },
@@ -192,7 +210,9 @@ class WeatherKartica extends StatelessWidget {
                 '📍 ${weather.lokacija}',
                 style: TextStyle(
                     fontSize: 11,
-                    color: isDark ? Colors.grey.shade400 : Colors.grey.shade500),
+                    color: isDark
+                        ? Colors.grey.shade400
+                        : Colors.grey.shade500),
               ),
             ],
           ],
@@ -207,8 +227,10 @@ class WeatherKartica extends StatelessWidget {
         Text(ikona, style: const TextStyle(fontSize: 18)),
         const SizedBox(height: 2),
         Text(vrijednost,
-            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
-        Text(label, style: TextStyle(fontSize: 10, color: Colors.grey.shade500)),
+            style:
+                const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+        Text(label,
+            style: TextStyle(fontSize: 10, color: Colors.grey.shade500)),
       ],
     );
   }
