@@ -32,10 +32,10 @@ class ApiConfig {
   static String get weatherPametna => '$baseUrl/weather/pametna-preporuka';
   static String get weatherKarta => '$baseUrl/weather/karta-overlay';
 
-  // ← NOVO: Regije
-static String get regijeSve => '$baseUrl/regije/sve';
-static String get regijePodregije => '$baseUrl/regije/podregije';
-static String get regijeRute => '$baseUrl/regije/rute';
-static String get regijeStatistika => '$baseUrl/regije/statistika';
+  // Regije
+  static String get regijeSve => '$baseUrl/regije/sve';
+  static String get regijePodregije => '$baseUrl/regije/podregije';
+  static String get regijeRute => '$baseUrl/regije/rute';
+  static String get regijeStatistika => '$baseUrl/regije/statistika';
 }
 

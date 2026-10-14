@@ -38,26 +38,26 @@
     });
 
         factory Ruta.fromJson(Map<String, dynamic> json) {
-      return Ruta(
-        id: json['id'] as int?,
-        naziv: json['naziv']?.toString() ?? '',
-        tezina: json['tezina']?.toString(),
-        regija: json['regija']?.toString(),
-        duljinaKm: (json['duljina_km'] as num?)?.toDouble(),
-        trajanjeH: (json['trajanje_h'] as num?)?.toDouble(),
-        visinskaRazlikaM: (json['visinska_razlika_m'] as num?)?.toDouble(),
-        trosak: (json['trosak'] as num?)?.toDouble(),
-        podrucje: json['podrucje']?.toString(),
-        polazisteLat: (json['polaziste_lat'] as num?)?.toDouble(),
-        polazisteLng: (json['polaziste_lng'] as num?)?.toDouble(),
-        polazisteNaziv: json['polaziste_naziv']?.toString(),
-        kontrolneTocke: _toStringList(json['kontrolne_tocke']),
-        tipTerena: _toStringList(json['tip_terena']),
-        oprema: _toStringList(json['oprema']),
-        godisnjadoba: _toStringList(json['godisnja_doba']),
-        dobneSkupine: _toStringList(json['dobne_skupine']),
-      );
-    }
+  return Ruta(
+    id: json['id'] as int?,
+    naziv: json['naziv']?.toString() ?? '',
+    tezina: json['tezina']?.toString(),
+    regija: json['regija']?.toString(),
+    duljinaKm: (json['duljina_km'] as num?)?.toDouble(),
+    trajanjeH: (json['trajanje_h'] as num?)?.toDouble(),
+    visinskaRazlikaM: (json['visinska_razlika_m'] as num?)?.toDouble(),
+    trosak: (json['trosak'] as num?)?.toDouble(),
+    podrucje: json['podrucje']?.toString(),
+    polazisteLat: (json['polaziste_lat'] as num?)?.toDouble(),
+    polazisteLng: (json['polaziste_lng'] as num?)?.toDouble(),
+    polazisteNaziv: json['polaziste_naziv']?.toString(),
+    kontrolneTocke: _toStringList(json['kontrolne_tocke']),
+    tipTerena: _toStringList(json['tip_terena']),
+    oprema: _toStringList(json['oprema']),
+    godisnjadoba: _toStringList(json['godisnja_doba']),
+    dobneSkupine: _toStringList(json['dobne_skupine']),
+  );
+}
 
     static List<String> _toStringList(dynamic value) {
       if (value == null) return [];
