@@ -45,19 +45,16 @@ def dohvati_photo_ref(naziv: str, lat: float, lng: float) -> str | None:
 
 def main():
     print("=" * 50)
-    print("DOHVAT PHOTO REFERENCI (ne URL-ova)")
+    print("DOHVAT PHOTO REFERENCI (samo za KT bez slike)")
     print("=" * 50)
 
-    
+
     print(f"API ključ: {str(GOOGLE_MAPS_API_KEY)[:10]}...")
 
-    
-    run_query("MATCH (kt:KontrolnaTocka) REMOVE kt.slika_url, kt.photo_ref")
-    print("Obrisane stare slike.\n")
-
+    # Dohvati samo KT koje NEMAJU photo_ref (nove kontrolne tocke)
     kts = run_query("""
         MATCH (kt:KontrolnaTocka)
-        WHERE kt.lat IS NOT NULL
+        WHERE kt.lat IS NOT NULL AND kt.photo_ref IS NULL
         RETURN kt.naziv AS naziv, kt.lat AS lat, kt.lng AS lng
         ORDER BY kt.naziv
     """)
