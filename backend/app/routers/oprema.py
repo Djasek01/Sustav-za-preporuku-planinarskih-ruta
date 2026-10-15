@@ -2,7 +2,6 @@ from fastapi import APIRouter, Query, HTTPException
 from typing import Optional
 from app.database import run_query
 
-
 router = APIRouter(prefix="/oprema", tags=["Oprema"])
 
 
@@ -200,6 +199,71 @@ def _procijeni_cestarinu(regija: str) -> float:
         if kljuc in regija_upper:
             return float(eur)
     return 5.0  
+
+
+@router.post("/povezi-opremu")
+def povezi_opremu_sve():
+    """
+    Automatski povezuje opremu s rutama koje nemaju nijednu ZAHTIJEVA_OPREMU relaciju.
+    Pravila dodjele prema težini rute:
+      - lagana: planinarske cipele + štapovi za hodanje
+      - srednja: osnovna planinarska oprema + štapovi za hodanje
+      - teška:  puna planinarska oprema + štapovi za hodanje
+    """
+    # 1) Pronađi rute bez opreme
+    rute_bez = run_query("""
+        MATCH (r:Ruta)
+        WHERE NOT (r)-[:ZAHTIJEVA_OPREMU]->(:Oprema)
+        RETURN r.id AS id, r.naziv AS naziv, r.tezina AS tezina
+        ORDER BY r.id
+    """)
+
+    if not rute_bez:
+        return {"poruka": "Sve rute već imaju povezanu opremu.", "povezano": 0}
+
+    # 2) Definiraj mapiranje težina → oprema
+    oprema_po_tezini = {
+        "lagana": ["planinarske cipele", "stapovi za hodanje"],
+        "srednja": ["osnovna planinarska oprema", "stapovi za hodanje"],
+        "teska": ["puna planinarska oprema", "stapovi za hodanje"],
+    }
+
+    povezane = []
+    for ruta in rute_bez:
+        rid = ruta["id"]
+        tezina = (ruta.get("tezina") or "srednja").lower()
+        oprema_nazivi = oprema_po_tezini.get(tezina, oprema_po_tezini["srednja"])
+
+        for oprema_naziv in oprema_nazivi:
+            run_query("""
+                MATCH (r:Ruta {id: $rid}), (o:Oprema {naziv: $oprema})
+                MERGE (r)-[:ZAHTIJEVA_OPREMU]->(o)
+            """, {"rid": rid, "oprema": oprema_naziv})
+
+        povezane.append({
+            "id": rid,
+            "naziv": ruta["naziv"],
+            "tezina": tezina,
+            "oprema": oprema_nazivi,
+        })
+
+    return {
+        "poruka": f"Uspješno povezano {len(povezane)} ruta s opremom.",
+        "povezano": len(povezane),
+        "rute": povezane,
+    }
+
+
+@router.get("/rute-bez-opreme")
+def rute_bez_opreme():
+    """Vraća popis ruta koje nemaju nijednu povezanu opremu."""
+    result = run_query("""
+        MATCH (r:Ruta)
+        WHERE NOT (r)-[:ZAHTIJEVA_OPREMU]->(:Oprema)
+        RETURN r.id AS id, r.naziv AS naziv, r.tezina AS tezina, r.regija AS regija
+        ORDER BY r.id
+    """)
+    return {"rute_bez_opreme": result, "ukupno": len(result)}
 
 
 def _napomena_ulaznica(ulaznica: float, regija: str) -> str:
