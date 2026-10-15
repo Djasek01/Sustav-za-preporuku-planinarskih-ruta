@@ -229,6 +229,16 @@ Future<Map<String, dynamic>> pretraziRute({
   throw Exception('Greška pri pretraživanju ruta');
 }
 
+/// Dohvati slike kontrolnih točaka za rutu
+Future<List<Map<String, dynamic>>> getSlikeRute(int rutaId) async {
+  final response = await http.get(Uri.parse('${ApiConfig.slike}/ruta/$rutaId'));
+  if (response.statusCode == 200) {
+    final List<dynamic> data = jsonDecode(response.body);
+    return data.cast<Map<String, dynamic>>();
+  }
+  return [];
+}
+
 /// Dohvati statistiku baze
 Future<Map<String, dynamic>> getStatistika() async {
   final response = await http.get(Uri.parse(ApiConfig.regijeStatistika));
@@ -239,5 +249,3 @@ Future<Map<String, dynamic>> getStatistika() async {
 }
  
 }
-
-
