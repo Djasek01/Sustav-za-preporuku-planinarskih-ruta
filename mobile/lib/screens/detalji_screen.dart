@@ -27,11 +27,25 @@ class _DetaljiScreenState extends State<DetaljiScreen> {
   bool _vlastitaOprema = false;
   WeatherRuta? _weather;
   bool _weatherUcitavanje = true;
+  List<Map<String, dynamic>> _slike = [];
+  bool _slikeUcitavanje = true;
 
   @override
   void initState() {
     super.initState();
     _ucitaj();
+  }
+
+  Future<void> _ucitajSlike() async {
+    try {
+      final slike = await _api.getSlikeRute(widget.rutaId);
+      setState(() {
+        _slike = slike.where((s) => (s['slika_url'] as String?)?.isNotEmpty == true).toList();
+        _slikeUcitavanje = false;
+      });
+    } catch (e) {
+      setState(() => _slikeUcitavanje = false);
+    }
   }
 
   Future<void> _ucitajWeather() async {
@@ -62,8 +76,9 @@ class _DetaljiScreenState extends State<DetaljiScreen> {
         _ucitavanje = false;
       });
 
-      // Dohvati weather NAKON što se ruta učitala
+      // Dohvati weather i slike NAKON što se ruta učitala
       _ucitajWeather();
+      _ucitajSlike();
     } catch (e) {
       setState(() => _ucitavanje = false);
       if (mounted) {
@@ -97,6 +112,58 @@ class _DetaljiScreenState extends State<DetaljiScreen> {
         ),
       );
     }
+  }
+
+  void _prikaziSliku(String url, String naziv) {
+    showDialog(
+      context: context,
+      builder: (_) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.all(16),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: Stack(
+                children: [
+                  Image.network(
+                    url,
+                    fit: BoxFit.contain,
+                    errorBuilder: (_, __, ___) => Container(
+                      height: 300,
+                      color: Colors.grey.shade800,
+                      child: const Center(
+                          child: Icon(Icons.broken_image, color: Colors.white54, size: 48)),
+                    ),
+                  ),
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: CircleAvatar(
+                      radius: 18,
+                      backgroundColor: Colors.black54,
+                      child: IconButton(
+                        icon: const Icon(Icons.close, size: 18, color: Colors.white),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            if (naziv.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Text(
+                naziv,
+                style: const TextStyle(color: Colors.white, fontSize: 14),
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
   }
 
   void _podijeli() {
@@ -196,6 +263,92 @@ class _DetaljiScreenState extends State<DetaljiScreen> {
                   ),
                 ),
               ),
+
+              const SizedBox(height: 12),
+
+              // ═══════ GALERIJA SLIKA ═══════
+              if (_slikeUcitavanje)
+                const SizedBox.shrink()
+              else if (_slike.isNotEmpty)
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Row(
+                          children: [
+                            Icon(Icons.photo_library, size: 18, color: Color(0xFF2E7D32)),
+                            SizedBox(width: 8),
+                            Text('Slike s rute',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold, fontSize: 14)),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        SizedBox(
+                          height: 160,
+                          child: ListView.separated(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: _slike.length,
+                            separatorBuilder: (_, __) => const SizedBox(width: 10),
+                            itemBuilder: (context, index) {
+                              final slika = _slike[index];
+                              return GestureDetector(
+                                onTap: () => _prikaziSliku(
+                                  slika['slika_url'] as String,
+                                  slika['naziv'] as String? ?? '',
+                                ),
+                                child: Column(
+                                  children: [
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(10),
+                                      child: Image.network(
+                                        slika['slika_url'] as String,
+                                        width: 200,
+                                        height: 130,
+                                        fit: BoxFit.cover,
+                                        loadingBuilder: (context, child, progress) {
+                                          if (progress == null) return child;
+                                          return Container(
+                                            width: 200,
+                                            height: 130,
+                                            color: Colors.grey.shade100,
+                                            child: const Center(
+                                                child: CircularProgressIndicator(strokeWidth: 2)),
+                                          );
+                                        },
+                                        errorBuilder: (_, __, ___) => Container(
+                                          width: 200,
+                                          height: 130,
+                                          color: Colors.green.shade50,
+                                          child: Icon(Icons.landscape,
+                                              size: 40, color: Colors.green.shade300),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    SizedBox(
+                                      width: 200,
+                                      child: Text(
+                                        slika['naziv'] as String? ?? '',
+                                        style: TextStyle(
+                                            fontSize: 11, color: Colors.grey.shade700),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
 
               const SizedBox(height: 12),
 

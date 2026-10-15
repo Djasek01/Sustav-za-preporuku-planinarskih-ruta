@@ -2,6 +2,7 @@ from fastapi import APIRouter, Query, HTTPException
 from typing import Optional
 from app.database import run_query
 
+
 router = APIRouter(prefix="/oprema", tags=["Oprema"])
 
 

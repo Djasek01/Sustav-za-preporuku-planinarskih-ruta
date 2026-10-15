@@ -66,18 +66,24 @@ class _KartaScreenState extends State<KartaScreen> {
 
     return filtrirane.map((t) {
       final hue = t.tip == 'polaziste'
-          ? BitmapDescriptor.hueAzure
-          : t.tezina == 'lagana'
-              ? BitmapDescriptor.hueGreen
-              : t.tezina == 'srednja'
-                  ? BitmapDescriptor.hueYellow
-                  : BitmapDescriptor.hueRed;
+          ? BitmapDescriptor.hueGreen
+          : t.tip == 'cilj'
+              ? BitmapDescriptor.hueRed
+              : t.tezina == 'lagana'
+                  ? BitmapDescriptor.hueGreen
+                  : t.tezina == 'srednja'
+                      ? BitmapDescriptor.hueYellow
+                      : BitmapDescriptor.hueRed;
 
       return Marker(
         markerId: MarkerId(t.id),
         position: t.pozicija,
         icon: BitmapDescriptor.defaultMarkerWithHue(hue),
-        // TOČKA 3: umjesto InfoWindow — onTap otvara bottom sheet
+        infoWindow: t.tip == 'polaziste'
+            ? InfoWindow(title: '🚩 Polazište', snippet: t.naziv)
+            : t.tip == 'cilj'
+                ? InfoWindow(title: '🏁 Cilj', snippet: t.naziv)
+                : InfoWindow.noText,
         onTap: () => _prikaziDetaljeTocke(t),
       );
     }).toSet();
@@ -115,6 +121,28 @@ class _KartaScreenState extends State<KartaScreen> {
                     ),
                   ),
                 ),
+
+                // Oznaka polazišta/cilja
+                if (t.tip == 'polaziste' || t.tip == 'cilj')
+                  Container(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: t.tip == 'polaziste'
+                          ? Colors.green.shade100
+                          : Colors.red.shade100,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      t.tip == 'polaziste' ? '🚩 Polazište rute' : '🏁 Cilj rute',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: t.tip == 'polaziste'
+                            ? Colors.green.shade800
+                            : Colors.red.shade800,
+                      ),
+                    ),
+                  ),
 
                 // Slika s fallbackom
                 ClipRRect(
@@ -255,6 +283,16 @@ class _KartaScreenState extends State<KartaScreen> {
         final pozicija = LatLng(lat, lng);
         tockeLinije.add(pozicija);
 
+        // Odredi tip: prvi = polazište, zadnji = cilj, ostali = kontrolna točka
+        String tip;
+        if (i == 0) {
+          tip = 'polaziste';
+        } else if (i == waypoints.length - 1 && waypoints.length > 1) {
+          tip = 'cilj';
+        } else {
+          tip = wp['tip'] as String? ?? 'kontrolna_tocka';
+        }
+
         _sveTocke.add(_TockaKarte(
           id: 'wp_$i',
           naziv: wp['naziv'] as String? ?? '',
@@ -263,7 +301,7 @@ class _KartaScreenState extends State<KartaScreen> {
           visinaM: (wp['visina_m'] as num?)?.toInt(),
           slikaUrl: wp['slika_url'] as String?,
           rutaNaziv: _nazivRute,
-          tip: wp['tip'] as String? ?? 'kontrolna_tocka',
+          tip: tip,
         ));
       }
 
@@ -363,6 +401,57 @@ class _KartaScreenState extends State<KartaScreen> {
                 ),
 
 
+                // Legenda za početak/kraj (kad je jedna ruta)
+                if (widget.rutaId != null)
+                  Positioned(
+                    top: 12,
+                    left: 12,
+                    child: SafeArea(
+                      child: Card(
+                        elevation: 4,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(10),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.location_on, color: Colors.green.shade700, size: 18),
+                                  const SizedBox(width: 6),
+                                  const Text('Polazište', style: TextStyle(fontSize: 13)),
+                                ],
+                              ),
+                              const SizedBox(height: 4),
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.flag, color: Colors.red.shade700, size: 18),
+                                  const SizedBox(width: 6),
+                                  const Text('Cilj', style: TextStyle(fontSize: 13)),
+                                ],
+                              ),
+                              const SizedBox(height: 4),
+                              Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.circle, color: Colors.blue.shade400, size: 14),
+                                  const SizedBox(width: 8),
+                                  const Text('Kontrolna točka', style: TextStyle(fontSize: 13)),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                // Filter legenda (kad su sve rute)
                 if (widget.rutaId == null)
                   Positioned(
                     top: 12,
