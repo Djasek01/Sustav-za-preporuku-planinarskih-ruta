@@ -104,7 +104,7 @@ class _RuteScreenState extends State<RuteScreen> {
                   child: Align(
                     alignment: Alignment.centerLeft,
                     child: Text('${_filtriraneRute.length} ruta',
-                        style: TextStyle(color: Colors.grey.shade600, fontSize: 13)),
+                        style: TextStyle(color: const Color.fromARGB(255, 241, 238, 238), fontSize: 13)),
                   ),
                 ),
                 const SizedBox(height: 4),

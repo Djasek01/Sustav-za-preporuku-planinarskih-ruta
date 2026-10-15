@@ -321,7 +321,7 @@ class _RegijaDetaljiScreenState extends State<RegijaDetaljiScreen>
                     // Filter po težini
                     Expanded(
                       child: DropdownButtonFormField<String?>(
-                        value: _odabranaTezina,
+                        initialValue: _odabranaTezina,
                         decoration: const InputDecoration(
                           labelText: 'Težina',
                           contentPadding: EdgeInsets.symmetric(
@@ -350,7 +350,7 @@ class _RegijaDetaljiScreenState extends State<RegijaDetaljiScreen>
                     // Sortiranje
                     Expanded(
                       child: DropdownButtonFormField<String>(
-                        value: _sortiraj,
+                        initialValue: _sortiraj,
                         decoration: const InputDecoration(
                           labelText: 'Sortiraj',
                           contentPadding: EdgeInsets.symmetric(
@@ -628,7 +628,7 @@ class _RegijaDetaljiScreenState extends State<RegijaDetaljiScreen>
                     if (hpd != null) 'HPD $hpd',
                   ].join(' · '),
                   style: TextStyle(
-                      fontSize: 11, color: Colors.grey.shade600),
+                      fontSize: 11, color: const Color.fromARGB(255, 222, 217, 217)),
                 ),
               ],
               if (tipTerena.isNotEmpty) ...[
